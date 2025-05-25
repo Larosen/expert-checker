@@ -8,7 +8,6 @@ import webbrowser
 import concurrent.futures
 import json
 import time
-from tqdm import tqdm
 
 DEBUG = False
 AUTO_OPEN_BROWSER = True
@@ -648,6 +647,8 @@ def process_branch(branch):
         final_url = f"{url}?branch_id={branch_id}"
         if DEBUG:
             print(f"Filiale {branches.index(branch) + 1}/{len(branches)}: {final_url}")
+        else:
+            print(f"\rFiliale {branches.index(branch) + 1}/{len(branches)}", end="")
 
         # Extrahiere den Webcode aus der URL
         webcode = url.split("/")[-1].split("-")[0]
@@ -715,10 +716,7 @@ def process_branch(branch):
 
 # Produktabfrage für alle Filialen parallel
 with concurrent.futures.ThreadPoolExecutor() as executor:
-    if DEBUG:
-        results = list(executor.map(process_branch, branches))
-    else:
-        results = list(tqdm(executor.map(process_branch, branches), total=len(branches), desc="Suche Angebote", unit="Filiale"))
+    results = list(executor.map(process_branch, branches))
 
 # Ergebnisse filtern und sortieren
 all_offers = [offer for offer in results if offer]
