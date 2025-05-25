@@ -1,4 +1,5 @@
-# Version 1.5
+# Version 2.0
+# Credits MyDealz @Barney & @Gorex 
 
 import requests
 import geopy.distance
@@ -349,24 +350,52 @@ def create_html_report(offers, product_title, webcode, discount):
             .display-item:hover {{
                 background-color: #ffe7b3;
             }}
-            .back-to-top {{
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background-color: #0066cc;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-                text-decoration: none;
+            .collapsible {{
+                background-color: #f8f9fa;
+                color: #333;
+                cursor: pointer;
+                padding: 18px;
+                width: 100%;
+                border: none;
+                text-align: left;
+                outline: none;
+                font-size: 1.1em;
                 font-weight: 600;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                transition: background-color 0.3s;
+                border-radius: 8px;
+                margin-bottom: 5px;
             }}
-            .back-to-top:hover {{
-                background-color: #0052a3;
-                text-decoration: none;
+            .active, .collapsible:hover {{
+                background-color: #e9ecef;
+            }}
+            .content {{
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.2s ease-out;
+                background-color: white;
+                border-radius: 0 0 8px 8px;
+            }}
+            .collapsible:after {{
+                content: '\\002B';
+                color: #666;
+                font-weight: bold;
+                float: right;
+                margin-left: 5px;
+            }}
+            .active:after {{
+                content: "\\2212";
             }}
         </style>
+        <script>
+            function toggleCollapsible(element) {{
+                element.classList.toggle("active");
+                var content = element.nextElementSibling;
+                if (content.style.maxHeight) {{
+                    content.style.maxHeight = null;
+                }} else {{
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }}
+            }}
+        </script>
     </head>
     <body>
         <div class="container">
@@ -394,14 +423,16 @@ def create_html_report(offers, product_title, webcode, discount):
     html_content += '''
                 </div>
             </div>
-        <table>
-            <tr>
-                <th>Filiale</th>
-                <th>Preis</th>
-                <th>Versand</th>
-                <th>Gesamtpreis</th>
-                <th>Verfügbarkeit</th>
-            </tr>
+            <button class="collapsible" onclick="toggleCollapsible(this)">Angebote anzeigen</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Filiale</th>
+                        <th>Preis</th>
+                        <th>Versand</th>
+                        <th>Gesamtpreis</th>
+                        <th>Verfügbarkeit</th>
+                    </tr>
     '''
     for offer in offers:
         if offer['online_stock'] == 0:
@@ -413,18 +444,40 @@ def create_html_report(offers, product_title, webcode, discount):
                 
         display_class = ' class="display-item"' if offer["on_display"] else ''
         html_content += f'''
-            <tr{display_class}>
-                <td><a href="{offer['url']}" target="_blank">{offer['store_name']}</a></td>
-                <td class="price">{format_price(offer['price'])}</td>
-                <td class="shipping">{format_price(offer['shipping'], is_shipping=True, has_online_stock=offer['online_stock'] > 0)}</td>
-                <td class="total-price">{format_price(offer['total_price'])}</td>
-                <td class="availability">{availability}</td>
-            </tr>
+                    <tr{display_class}>
+                        <td><a href="{offer['url']}" target="_blank">{offer['store_name']}</a></td>
+                        <td class="price">{format_price(offer['price'])}</td>
+                        <td class="shipping">{format_price(offer['shipping'], is_shipping=True, has_online_stock=offer['online_stock'] > 0)}</td>
+                        <td class="total-price">{format_price(offer['total_price'])}</td>
+                        <td class="availability">{availability}</td>
+                    </tr>
         '''
     
     html_content += '''
-        </table>
-        <a href="#" class="back-to-top">Nach oben</a>
+                </table>
+            </div>
+            <button class="collapsible" onclick="toggleCollapsible(this)">Alle durchsuchten Filialen anzeigen</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Filiale</th>
+                        <th>Branch ID</th>
+                        <th>Expert ID</th>
+                    </tr>
+    '''
+    
+    for branch in branches:
+        html_content += f'''
+                    <tr>
+                        <td>{branch['store']['name']} {branch['store']['city']}</td>
+                        <td>{branch['store']['id']}</td>
+                        <td>{branch['store']['expId']}</td>
+                    </tr>
+        '''
+
+    html_content += '''
+                </table>
+            </div>
         </div>
     </body>
     </html>
@@ -703,3 +756,4 @@ if AUTO_OPEN_BROWSER or input('\nErgebnis im Browser ansehen?  (j/n): ').lower()
     webbrowser.open(f'file://{html_file}')
 
 # Programm endet automatisch
+print("\nScript beendet.")
