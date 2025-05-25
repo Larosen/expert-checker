@@ -723,25 +723,9 @@ all_offers = [offer for offer in results if offer]
 all_offers = sorted(all_offers, key=lambda d: d['store_name'])
 all_offers = sorted(all_offers, key=lambda d: d['total_price'])
 
-# Liste nach Preis und Namen sortiert ausgeben
+# Kurze Zusammenfassung ausgeben
 if len(all_offers) > 0:
-    print("\nFolgende Filialen bieten das Produkt an:\n")
-    for offer in all_offers:
-        formatted_price = format_price(offer['price'])
-        formatted_shipping = format_price(offer['shipping'], is_shipping=True, has_online_stock=offer['online_stock'] > 0)
-        print(f"{offer['store_name']}: {offer['url']}")
-        print(f"{formatted_price}", end="")
-        if offer["online_stock"] == 0:
-            distance = get_distance(user_coordinates, offer["coordinates"])
-            print(f" bei Abholung in {distance}km - {offer['stock']}x verfügbar", end="")
-        elif offer["total_price"] == offer["price"]:
-            print(f" inkl. Versand - {offer['online_stock']}x verfügbar", end="")
-        else:
-            print(f" + {formatted_shipping} Versand - {offer['online_stock']}x verfügbar", end="")
-        if offer["on_display"]:
-            print(" (Ausstellungsstück)")
-        else:
-            print("")
+    print(f"\n{len(all_offers)} Angebote gefunden. Details werden im Browser angezeigt.")
 else:
     print("\nEs wurden keine Angebote gefunden.")
 
