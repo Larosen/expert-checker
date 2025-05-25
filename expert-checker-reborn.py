@@ -134,6 +134,7 @@ def get_branch_product_data(webcode, storeid):
                 print(f"\nFehler bei Filiale {storeid}, versuche erneut...")
             time.sleep(retry_delay)
             retry_delay *= 2  # Exponentielles Backoff
+            continue
 
 
 def get_coordinates(plz):
@@ -348,11 +349,28 @@ def create_html_report(offers, product_title, webcode, discount):
             .display-item:hover {{
                 background-color: #ffe7b3;
             }}
+            .back-to-top {{
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #0066cc;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 5px;
+                text-decoration: none;
+                font-weight: 600;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                transition: background-color 0.3s;
+            }}
+            .back-to-top:hover {{
+                background-color: #0052a3;
+                text-decoration: none;
+            }}
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>expert checker reborn</h1>
+        <h1>expert checker reborn</h1>
             <div class="product-info">
                 <div class="product-title">{product_title} (Webcode: {webcode})</div>
                 <div class="discount-info">Direktabzug: {format_price(discount) if discount > 0 else "-"}</div>
@@ -376,14 +394,14 @@ def create_html_report(offers, product_title, webcode, discount):
     html_content += '''
                 </div>
             </div>
-            <table>
-                <tr>
-                    <th>Filiale</th>
-                    <th>Preis</th>
-                    <th>Versand</th>
-                    <th>Gesamtpreis</th>
-                    <th>Verfügbarkeit</th>
-                </tr>
+        <table>
+            <tr>
+                <th>Filiale</th>
+                <th>Preis</th>
+                <th>Versand</th>
+                <th>Gesamtpreis</th>
+                <th>Verfügbarkeit</th>
+            </tr>
     '''
     for offer in offers:
         if offer['online_stock'] == 0:
@@ -404,29 +422,9 @@ def create_html_report(offers, product_title, webcode, discount):
             </tr>
         '''
     
-    # Neue Tabelle für alle durchsuchten Filialen
     html_content += '''
-            </table>
-            <h2>Alle durchsuchten Filialen</h2>
-            <table>
-                <tr>
-                    <th>Filiale</th>
-                    <th>Branch ID</th>
-                    <th>Expert ID</th>
-                </tr>
-    '''
-    
-    for branch in branches:
-        html_content += f'''
-            <tr>
-                <td>{branch['store']['name']} {branch['store']['city']}</td>
-                <td>{branch['store']['id']}</td>
-                <td>{branch['store']['expId']}</td>
-            </tr>
-        '''
-
-    html_content += '''
-            </table>
+        </table>
+        <a href="#" class="back-to-top">Nach oben</a>
         </div>
     </body>
     </html>
@@ -561,7 +559,7 @@ if not only_online_offers:
         if user_coordinates is None:
             print("Ungültige PLZ oder Fehler beim Abrufen der Koordinaten. Bitte erneut versuchen.")
             continue
-            
+        
         try:
             max_distance_input = input("Maximale Distanz für lokale Angebote in km eingeben (leer = unbegrenzt): ")
             max_distance = int(max_distance_input) if max_distance_input.strip() else 999999
@@ -704,4 +702,4 @@ if AUTO_OPEN_BROWSER or input('\nErgebnis im Browser ansehen?  (j/n): ').lower()
     html_file = create_html_report(all_offers, product_title, webcode, discount)
     webbrowser.open(f'file://{html_file}')
 
-input('\nDrücke "Enter" zum Beenden.')
+# Programm endet automatisch
