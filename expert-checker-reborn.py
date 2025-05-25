@@ -65,33 +65,28 @@ def get_article_id_from_search(search_term):
 
 
 def get_branches():
-    """Ruft die Liste aller Filialen direkt von expert ab oder weicht bei Fehler auf Alternative aus."""
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0',
-    }
-    params = {
-        "lat": 0,
-        "lng": 0,
-        "maxResults": 500,
-        "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
-        "source": "HTML5",
-        "withWebsite": True,
-        "conditions": {
-            "storeFinderResultFilter": "ALL"}
-    }
+    """Ruft die Liste aller Filialen von der externen JSON-Datei ab."""
     try:
-        response = requests.post(
-            'https://www.expert.de/_api/storeFinder/getNearestStores',
-            headers=headers,
-            json=params,
-        )
+        response = requests.get('https://schneinet.de/expert/expert_branches.json')
+        response.raise_for_status()  # Wirft eine Exception für Fehlercodes
         branches = response.json()
-    except:
         if DEBUG:
-            print("Filialabruf direkt von expert nicht möglich. Nutze lokales Backup.")
-        with open('expert_branches.json', 'r') as f:
-            branches = json.loads(f.read())
-    return branches
+            print(f"Filialen erfolgreich von Server geladen: {len(branches)} Filialen gefunden")
+        return branches
+    except Exception as e:
+        if DEBUG:
+            print(f"Fehler beim Laden der Filialen vom Server: {str(e)}")
+            print("Versuche lokales Backup zu verwenden...")
+        try:
+            with open('expert_branches.json', 'r') as f:
+                branches = json.loads(f.read())
+            if DEBUG:
+                print("Lokales Backup erfolgreich geladen")
+            return branches
+        except:
+            if DEBUG:
+                print("Auch lokales Backup konnte nicht geladen werden")
+            return []
 
 def get_branch_product_data(webcode, storeid):
     """Liefert API-Daten (Preis, Verfügbarkeit, etc.) eines Produkts für eine Filiale."""
