@@ -141,34 +141,42 @@ def get_branch_product_data(webcode, storeid):
 def get_coordinates(plz):
     """Liefert für PLZ die zugehörigen Geo-Koordinaten."""
     try:
-        # Entferne eventuelle Leerzeichen und stelle sicher, dass es 5 Ziffern sind
         plz = plz.strip()
         if not plz.isdigit() or len(plz) != 5:
             if DEBUG:
                 print(f"Ungültige PLZ: {plz}")
             return None
-            
-        response = requests.get(f"https://api.zippopotam.us/de/{plz}")
+
+        response = requests.get(f"http://api.zippopotam.us/de/{plz}")
         if response.status_code != 200:
             if DEBUG:
                 print(f"Fehler beim Abrufen der Koordinaten: Status {response.status_code}")
             return None
-            
+
         data = response.json()
-        if "latitude" not in data or "longitude" not in data:
+        
+        # Überprüfe, ob 'places' existiert und nicht leer ist
+        if "places" not in data or not data["places"]:
             if DEBUG:
                 print(f"Keine Koordinaten in der Antwort gefunden: {data}")
             return None
-            
-        coordinates = (float(data["latitude"]), float(data["longitude"]))
+
+        # Zugriff auf das erste Element im 'places'-Array
+        place = data["places"][0]
+        coordinates = (
+            float(place["latitude"]),
+            float(place["longitude"])
+        )
+        
         if DEBUG:
             print(f"Koordinaten für PLZ {plz}: {coordinates}")
         return coordinates
-        
+
     except Exception as e:
         if DEBUG:
             print(f"Fehler beim Abrufen der Koordinaten: {str(e)}")
         return None
+
 
 
 def get_discount(articleId):
