@@ -148,7 +148,7 @@ def get_coordinates(plz):
                 print(f"Ungültige PLZ: {plz}")
             return None
             
-        response = requests.get(f"https://zip-api.eu/api/v1/info/DE-{plz}")
+        response = requests.get(f"https://api.zippopotam.us/de/{plz}")
         if response.status_code != 200:
             if DEBUG:
                 print(f"Fehler beim Abrufen der Koordinaten: Status {response.status_code}")
